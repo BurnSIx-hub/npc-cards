@@ -1,0 +1,913 @@
+/* ═══════════════════════════════════════════════════════════
+   NPC CARDS MODULE — Styles
+   ═══════════════════════════════════════════════════════════ */
+
+/* Local Alegreya font */
+@font-face {
+  font-family: 'Alegreya';
+  src: url('../assets/fonts/Alegreya-Regular.ttf') format('truetype');
+  font-weight: 400; font-style: normal;
+}
+@font-face {
+  font-family: 'Alegreya';
+  src: url('../assets/fonts/Alegreya-Italic.ttf') format('truetype');
+  font-weight: 400; font-style: italic;
+}
+@font-face {
+  font-family: 'Alegreya';
+  src: url('../assets/fonts/Alegreya-SemiBold.ttf') format('truetype');
+  font-weight: 600; font-style: normal;
+}
+@font-face {
+  font-family: 'Alegreya';
+  src: url('../assets/fonts/Alegreya-Bold.ttf') format('truetype');
+  font-weight: 700; font-style: normal;
+}
+@font-face {
+  font-family: 'Alegreya';
+  src: url('../assets/fonts/Alegreya-BoldItalic.ttf') format('truetype');
+  font-weight: 700; font-style: italic;
+}
+
+:root {
+  --npc-gold: #c9a84c;
+  --npc-gold-light: #f0d080;
+  --npc-dark: #0d0d1a;
+  --npc-card-w: 300px;
+  --npc-card-h: 384px;
+  --npc-font: 'Alegreya', serif;
+}
+
+/* ── COLLECTION WINDOW ─────────────────────────────────────── */
+
+#npc-cards-app {
+  font-family: var(--npc-font);
+  background: #0f0f1e;
+  color: #e8dfc0;
+  min-width: 700px;
+  min-height: 500px;
+}
+
+#npc-cards-app .window-content {
+  padding: 0;
+  overflow: hidden;
+  background: #0f0f1e;
+  /* Make window-content a flex container so our wrapper div can fill height.
+     Without this, the wrapper <div> from _renderHTML has 0 height and the
+     `height: 100%` chain on .npc-cards-layout breaks — content overflows
+     instead of scrolling. */
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* The unnamed wrapper <div> created in _renderHTML — must fill window-content
+   so its child .npc-cards-layout has a real height to be 100% of. */
+#npc-cards-app .window-content > div {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.npc-cards-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+/* Tab content area — must constrain height so children can scroll */
+.npc-tab-content {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Tabs */
+.npc-cards-tabs {
+  display: flex;
+  background: #07071a;
+  border-bottom: 1px solid #c9a84c44;
+}
+
+.npc-tab-btn {
+  flex: 1;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  color: #a89060;
+  font-family: var(--npc-font);
+  font-size: 13px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.npc-tab-btn:hover { color: #f0d080; }
+.npc-tab-btn.active {
+  color: #f0d080;
+  border-bottom-color: #c9a84c;
+}
+
+/* Search */
+.npc-search-wrap {
+  padding: 10px 20px 0;
+}
+
+.npc-search-input {
+  width: 100%;
+  background: #1a1a2e;
+  border: 1px solid #c9a84c44;
+  border-radius: 4px;
+  color: #e8dfc0;
+  padding: 7px 12px;
+  font-family: var(--npc-font);
+  font-size: 13px;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.npc-search-input:focus {
+  outline: none;
+  border-color: #c9a84c;
+}
+
+.npc-search-input::placeholder { color: #a89060; }
+
+/* Grid */
+.npc-cards-grid-wrap {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  scrollbar-width: thin;
+  scrollbar-color: #c9a84c44 transparent;
+}
+
+.npc-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, var(--npc-card-w));
+  gap: 20px;
+  justify-content: center;
+}
+
+.npc-empty-state {
+  grid-column: 1/-1;
+  text-align: center;
+  padding: 60px 20px;
+  color: #a89060;
+  font-family: var(--npc-font);
+  letter-spacing: 2px;
+  font-size: 14px;
+  opacity: 0.6;
+}
+
+/* ── CARD ────────────────────────────────────────────────────── */
+
+.npc-card {
+  position: relative;
+  width: var(--npc-card-w);
+  height: var(--npc-card-h);
+  cursor: pointer;
+  transition: transform 0.3s ease, filter 0.3s ease;
+  flex-shrink: 0;
+}
+
+.npc-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  filter: drop-shadow(0 12px 24px rgba(201,168,76,0.4));
+}
+
+.npc-card-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+  border-radius: 8px;
+}
+
+/* Art zone */
+.npc-card-art {
+  position: absolute;
+  top: var(--npc-art-top, 8%);
+  left: var(--npc-art-left, 13%);
+  width: var(--npc-art-w, 74%);
+  height: var(--npc-art-h, 67%);
+  overflow: hidden;
+  border-radius: 15%;
+  background: transparent;
+  user-select: none;
+}
+
+.npc-card-art img {
+  position: absolute;
+  top: var(--npc-img-top, 0px);
+  left: var(--npc-img-left, 0px);
+  width: var(--npc-img-scale, 100%);
+  height: auto;
+  min-height: 100%;
+  object-fit: cover;
+  background: transparent;
+  cursor: grab;
+  user-select: none;
+  transform-origin: top left;
+}
+
+/* Text block */
+.npc-card-text {
+  position: absolute;
+  left: var(--npc-text-left, 10%);
+  top: var(--npc-text-top, 77%);
+  width: 80%;
+  text-align: center;
+  pointer-events: none;
+  cursor: move;
+}
+
+/* Editor mode: text draggable */
+.npc-card-text.draggable { pointer-events: all; }
+
+.npc-card-name {
+  font-family: var(--npc-font);
+  font-size: 14px;
+  font-weight: 700;
+  color: #f0d080;
+  text-shadow: 0 0 8px #000, 0 0 16px #000, 1px 1px 2px #000;
+  letter-spacing: 1px;
+  line-height: 1.2;
+  margin-bottom: 2px;
+  pointer-events: none;
+}
+
+.npc-card-desc {
+  font-family: var(--npc-font);
+  font-style: italic;
+  font-size: 10px;
+  color: #ffffff;
+  mix-blend-mode: difference;
+  line-height: 1.3;
+  max-height: 30px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Per-template positions — все по arcane */
+.npc-card[data-template="arcane"]    { --npc-art-top:16%; --npc-art-left:18%; --npc-art-w:59%; --npc-art-h:65%; --npc-text-top:83%; }
+.npc-card[data-template="adventure"] { --npc-art-top:16%; --npc-art-left:18%; --npc-art-w:59%; --npc-art-h:65%; --npc-text-top:83%; }
+.npc-card[data-template="silver"]    { --npc-art-top:16%; --npc-art-left:18%; --npc-art-w:59%; --npc-art-h:65%; --npc-text-top:83%; }
+.npc-card[data-template="divine"]    { --npc-art-top:16%; --npc-art-left:18%; --npc-art-w:59%; --npc-art-h:65%; --npc-text-top:83%; }
+.npc-card[data-template="map"]       { --npc-art-top:16%; --npc-art-left:18%; --npc-art-w:59%; --npc-art-h:65%; --npc-text-top:83%; }
+
+.npc-card[data-template="silver"]    .npc-card-name { color: #c0d0e0; }
+.npc-card[data-template="divine"]    .npc-card-name { color: #fff8e0; }
+.npc-card[data-template="map"]       .npc-card-name { color: #c8a060; }
+
+/* GM delete / edit buttons */
+.npc-card-delete,
+.npc-card-edit {
+  position: absolute;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 10;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0;
+}
+
+.npc-card-delete {
+  top: 4px; right: 4px;
+  background: rgba(140,0,0,0.85);
+  border: 1px solid #ff4444;
+}
+
+.npc-card-edit {
+  top: 4px; left: 4px;
+  background: rgba(20,60,120,0.85);
+  border: 1px solid #6699ff;
+  font-size: 14px;
+}
+
+.npc-card:hover .npc-card-delete,
+.npc-card:hover .npc-card-edit { opacity: 1; }
+
+/* Edit mode badge */
+.npc-edit-mode-badge {
+  font-family: var(--npc-font);
+  font-size: 11px;
+  color: #6699ff;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  border: 1px solid #6699ff66;
+  border-radius: 3px;
+  background: rgba(20,60,120,0.2);
+  align-self: center;
+}
+
+/* ── GIVE MODE: card selection ─────────────────────────────── */
+
+/* Cards in GM "give" mode become selectable */
+.npc-cards-grid.selectable .npc-card {
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease, outline 0.15s;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+.npc-cards-grid.selectable .npc-card:hover {
+  transform: translateY(-3px) scale(1.01);
+  filter: drop-shadow(0 6px 16px rgba(201,168,76,0.5));
+}
+
+.npc-cards-grid.selectable .npc-card.selected {
+  outline-color: #f0d080;
+  filter: drop-shadow(0 0 14px rgba(240,208,128,0.7));
+  transform: translateY(-4px) scale(1.02);
+}
+
+.npc-cards-grid.selectable .npc-card.selected::before {
+  content: '✦';
+  position: absolute;
+  top: -10px; right: -10px;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #c9a84c, #f0d080);
+  color: #0d0d1a;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px rgba(240,208,128,0.8);
+  z-index: 11;
+  pointer-events: none;
+}
+
+/* Selected card indicator bar */
+.npc-give-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  margin-top: 8px;
+  background: linear-gradient(90deg, rgba(201,168,76,0.08), rgba(201,168,76,0.02));
+  border: 1px solid #c9a84c44;
+  border-radius: 4px;
+  font-family: var(--npc-font);
+  font-size: 12px;
+  color: #a89060;
+  letter-spacing: 0.5px;
+}
+
+.npc-give-status.has-selection {
+  border-color: #c9a84c;
+  background: linear-gradient(90deg, rgba(201,168,76,0.18), rgba(201,168,76,0.05));
+  color: #f0d080;
+}
+
+.npc-give-status .selected-name {
+  font-weight: 700;
+  color: #f0d080;
+}
+
+.npc-give-status .clear-btn {
+  margin-left: auto;
+  background: none;
+  border: 1px solid #c9a84c66;
+  border-radius: 3px;
+  color: #a89060;
+  font-size: 11px;
+  padding: 2px 8px;
+  cursor: pointer;
+  font-family: var(--npc-font);
+  letter-spacing: 0.5px;
+}
+.npc-give-status .clear-btn:hover { color: #f0d080; border-color: #c9a84c; }
+
+.npc-btn[disabled],
+.npc-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── GM PANEL ────────────────────────────────────────────────── */
+
+/* Scrollable wrapper for the entire GM panel content */
+.npc-gm-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: #c9a84c44 transparent;
+}
+.npc-gm-scroll::-webkit-scrollbar { width: 6px; }
+.npc-gm-scroll::-webkit-scrollbar-track { background: transparent; }
+.npc-gm-scroll::-webkit-scrollbar-thumb { background: #c9a84c44; border-radius: 3px; }
+
+/* Inside the GM scroll, the grid wrap shouldn't add its own scroll */
+.npc-gm-scroll .npc-cards-grid-wrap {
+  overflow: visible;
+  padding: 0;
+}
+
+.npc-gm-panel {
+  padding: 20px;
+  display: flex;
+  gap: 24px;
+}
+
+.npc-gm-preview { flex-shrink: 0; }
+
+.npc-gm-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.npc-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.npc-form-group label {
+  font-family: var(--npc-font);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #c9a84c;
+}
+
+.npc-form-group input,
+.npc-form-group textarea,
+.npc-form-group select {
+  background: #1a1a2e;
+  border: 1px solid #c9a84c44;
+  border-radius: 4px;
+  color: #e8dfc0;
+  padding: 6px 10px;
+  font-family: var(--npc-font);
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.npc-form-group input:focus,
+.npc-form-group textarea:focus,
+.npc-form-group select:focus {
+  outline: none;
+  border-color: #c9a84c;
+}
+
+.npc-form-group textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.npc-form-group select option { background: #1a1a2e; }
+
+/* Template selector */
+.npc-template-select {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(54px, 1fr));
+  gap: 6px;
+}
+
+.npc-tmpl-opt { position: relative; cursor: pointer; }
+.npc-tmpl-opt input { display: none; }
+
+.npc-tmpl-thumb {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1002/1280;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  transition: border-color 0.2s, transform 0.2s;
+  opacity: 0.7;
+}
+
+.npc-tmpl-opt input:checked + .npc-tmpl-thumb {
+  border-color: #c9a84c;
+  opacity: 1;
+  transform: scale(1.05);
+}
+.npc-tmpl-opt:hover .npc-tmpl-thumb { opacity: 1; }
+
+/* Buttons */
+.npc-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.npc-btn {
+  padding: 8px 16px;
+  border: 1px solid #c9a84c66;
+  border-radius: 4px;
+  background: #1a1220;
+  color: #f0d080;
+  font-family: var(--npc-font);
+  font-size: 12px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.npc-btn:hover { background: #c9a84c22; border-color: #c9a84c; }
+.npc-btn.primary { background: #c9a84c22; border-color: #c9a84c; }
+.npc-btn.primary:hover { background: #c9a84c44; }
+.npc-btn.danger { border-color: #c0303066; color: #ff8080; }
+.npc-btn.danger:hover { background: #c0303022; border-color: #c03030; }
+
+.npc-player-select { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.npc-player-select select { flex: 1; }
+
+/* ── EDITOR DRAG HINT ────────────────────────────────────────── */
+.npc-editor-hint {
+  font-family: var(--npc-font);
+  font-size: 11px;
+  color: #c9a84c88;
+  font-style: italic;
+  text-align: center;
+  margin-top: 6px;
+}
+
+/* ── REVEAL ANIMATION ────────────────────────────────────────── */
+
+#npc-card-reveal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+#npc-card-reveal-overlay.active { pointer-events: all; }
+
+/* Dark vignette backdrop — no rectangle, radial only */
+.npc-reveal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 70% at center, #1a0a3aee 0%, #000018ff 100%);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.npc-reveal-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.npc-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: #c9a84c;
+  animation: particleFly 1.5s ease-out forwards;
+}
+
+@keyframes particleFly {
+  0%   { transform: translate(0,0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--px), var(--py)) scale(0); opacity: 0; }
+}
+
+/* Rays — clipped to circle so no square border visible */
+.npc-reveal-rays {
+  position: absolute;
+  /* Make it a large circle centered on screen */
+  width: 200vmax;
+  height: 200vmax;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,   rgba(201,168,76,0.10) 9deg,
+    transparent 18deg,  rgba(201,168,76,0.10) 27deg,
+    transparent 36deg,  rgba(201,168,76,0.10) 45deg,
+    transparent 54deg,  rgba(201,168,76,0.10) 63deg,
+    transparent 72deg,  rgba(201,168,76,0.10) 81deg,
+    transparent 90deg,  rgba(201,168,76,0.10) 99deg,
+    transparent 108deg, rgba(201,168,76,0.10) 117deg,
+    transparent 126deg, rgba(201,168,76,0.10) 135deg,
+    transparent 144deg, rgba(201,168,76,0.10) 153deg,
+    transparent 162deg, rgba(201,168,76,0.10) 171deg,
+    transparent 180deg, rgba(201,168,76,0.10) 189deg,
+    transparent 198deg, rgba(201,168,76,0.10) 207deg,
+    transparent 216deg, rgba(201,168,76,0.10) 225deg,
+    transparent 234deg, rgba(201,168,76,0.10) 243deg,
+    transparent 252deg, rgba(201,168,76,0.10) 261deg,
+    transparent 270deg, rgba(201,168,76,0.10) 279deg,
+    transparent 288deg, rgba(201,168,76,0.10) 297deg,
+    transparent 306deg, rgba(201,168,76,0.10) 315deg,
+    transparent 324deg, rgba(201,168,76,0.10) 333deg,
+    transparent 342deg, rgba(201,168,76,0.10) 351deg,
+    transparent 360deg
+  );
+  /* Fade edges with radial mask */
+  -webkit-mask-image: radial-gradient(ellipse 50% 50% at center, black 30%, transparent 75%);
+  mask-image: radial-gradient(ellipse 50% 50% at center, black 30%, transparent 75%);
+  opacity: 0;
+  animation: raysRotate 6s linear infinite;
+  transition: opacity 0.5s;
+  pointer-events: none;
+}
+
+@keyframes raysRotate { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+/* Card wrapper */
+.npc-reveal-card-wrap {
+  position: relative;
+  z-index: 2;
+  transform: scale(0) rotateY(90deg);
+  opacity: 0;
+  transition: transform 0.6s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s;
+  background: transparent !important;
+}
+
+.npc-reveal-card-wrap.shown {
+  transform: scale(1) rotateY(0deg);
+  opacity: 1;
+}
+
+/* Big card in reveal — responsive size */
+.npc-reveal-card-wrap .npc-card {
+  width: min(360px, 45vw);
+  height: min(460px, 57vw);
+  cursor: default;
+  background: transparent !important;
+  filter: drop-shadow(0 0 30px rgba(201,168,76,0.8)) drop-shadow(0 0 60px rgba(201,168,76,0.3));
+  animation: cardFloat 3s ease-in-out infinite;
+}
+
+@keyframes cardFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+
+.npc-reveal-card-wrap .npc-card-name { font-size: 18px; }
+.npc-reveal-card-wrap .npc-card-desc { font-size: 12px; max-height: 44px; }
+
+.npc-reveal-hint {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--npc-font);
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: #c9a84c88;
+  animation: hintPulse 2s ease-in-out infinite;
+  z-index: 3;
+  white-space: nowrap;
+}
+
+@keyframes hintPulse {
+  0%, 100% { opacity: 0.3; }
+  50%       { opacity: 1; }
+}
+
+/* Shine — infinite loop in reveal only */
+@keyframes cardShineLoop {
+  0%   { transform: translateX(-150%) skewX(-20deg); opacity: 0.8; }
+  40%  { transform: translateX(250%) skewX(-20deg); opacity: 0; }
+  100% { transform: translateX(250%) skewX(-20deg); opacity: 0; }
+}
+
+.npc-card-shine {
+  position: absolute;
+  inset: 0;
+  /* No overflow:hidden — that creates black rect over transparent PNG */
+  pointer-events: none;
+  z-index: 5;
+  border-radius: 8px;
+}
+
+/* On regular cards: no shine */
+.npc-card-shine::after { content: none; }
+
+/* In reveal: looping shine with clip */
+.npc-reveal-card-wrap .npc-card-shine {
+  overflow: hidden;
+  /* Use mix-blend-mode to avoid black rect */
+  mix-blend-mode: screen;
+}
+
+.npc-reveal-card-wrap .npc-card-shine::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+  animation: cardShineLoop 3.5s ease-in-out 0.5s infinite;
+}
+
+/* ── ZOOM BAR ────────────────────────────────────────────────── */
+
+.npc-zoom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.npc-zoom-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid #c9a84c88;
+  background: #1a1220;
+  color: #f0d080;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, border-color 0.2s;
+  padding: 0;
+}
+
+.npc-zoom-btn:hover {
+  background: #c9a84c33;
+  border-color: #c9a84c;
+}
+
+.npc-zoom-label {
+  font-family: 'Alegreya', serif;
+  font-size: 12px;
+  color: #a89060;
+  min-width: 36px;
+  text-align: center;
+}
+
+/* ── FONT SIZE BAR ───────────────────────────────────────────── */
+
+.npc-font-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.npc-font-bar-label {
+  font-family: 'Alegreya', serif;
+  font-size: 11px;
+  color: #a89060;
+  letter-spacing: 0.5px;
+}
+
+.npc-font-bar-sep {
+  width: 1px;
+  height: 14px;
+  background: #c9a84c44;
+  margin: 0 4px;
+}
+
+/* ── TOOLBAR BUTTON ──────────────────────────────────────────── */
+/* Button is now registered via getSceneControlButtons hook; Foundry
+   handles layout and styling. We only tweak the icon color slightly. */
+
+li[data-tool="npc-cards-open"] button:hover,
+button[data-tool="npc-cards-open"]:hover {
+  color: #f0d080;
+}
+
+/* ── TEMPLATE MANAGER ───────────────────────────────────────── */
+
+.npc-template-manager {
+  margin: 0 20px 16px;
+  padding: 14px 16px;
+  border: 1px solid #c9a84c33;
+  border-radius: 6px;
+  background: rgba(201,168,76,0.03);
+}
+
+.npc-section-label {
+  font-family: var(--npc-font);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: #c9a84c;
+  margin-bottom: 12px;
+}
+
+.npc-tmpl-mgr-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+  min-height: 24px;
+}
+
+.npc-tmpl-mgr-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  width: 64px;
+}
+
+.npc-tmpl-mgr-thumb {
+  width: 64px;
+  aspect-ratio: 1002 / 1280;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #c9a84c44;
+}
+
+.npc-tmpl-mgr-label {
+  font-family: var(--npc-font);
+  font-size: 10px;
+  color: #a89060;
+  text-align: center;
+  line-height: 1.2;
+  max-width: 64px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.npc-tmpl-builtin-tag {
+  font-family: var(--npc-font);
+  font-size: 9px;
+  color: #c9a84c55;
+  letter-spacing: 0.3px;
+}
+
+.npc-tmpl-delete {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  background: rgba(140,0,0,0.85);
+  border: 1px solid #ff4444;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 10px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  z-index: 5;
+}
+
+.npc-tmpl-mgr-item:hover .npc-tmpl-delete { opacity: 1; }
+
+.npc-add-tmpl-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.npc-add-tmpl-row input[type="text"] {
+  flex: 1;
+  min-width: 120px;
+  background: #1a1a2e;
+  border: 1px solid #c9a84c44;
+  border-radius: 4px;
+  color: #e8dfc0;
+  padding: 6px 10px;
+  font-family: var(--npc-font);
+  font-size: 13px;
+  transition: border-color 0.2s;
+}
+
+.npc-add-tmpl-row input[type="text"]:focus {
+  outline: none;
+  border-color: #c9a84c;
+}
+
+#npc-tmpl-file-hint {
+  font-family: var(--npc-font);
+  font-size: 11px;
+  color: #a89060;
+}
+
+/* ── SCROLLBAR ───────────────────────────────────────────────── */
+.npc-cards-grid-wrap::-webkit-scrollbar { width: 6px; }
+.npc-cards-grid-wrap::-webkit-scrollbar-track { background: transparent; }
+.npc-cards-grid-wrap::-webkit-scrollbar-thumb { background: #c9a84c44; border-radius: 3px; }
+
+
