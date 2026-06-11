@@ -10,12 +10,17 @@ const esc = s => String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").repl
 
 // ── Card templates ────────────────────────────────────────────────────────────
 
+// Локализация: строки в lang/ru.json и lang/en.json (ключи NPCCARDS.*)
+const L  = (k)    => game.i18n.localize(`NPCCARDS.${k}`);
+const LF = (k, d) => game.i18n.format(`NPCCARDS.${k}`, d);
+
+// label встроенных шаблонов локализуется в getTemplates() (при загрузке модуля i18n ещё не готов)
 const DEFAULT_TEMPLATES = {
-  arcane:    { id: "arcane",    label: "Тёмная Магическая",      file: "assets/cards/card-arcane.png",    builtin: true },
-  adventure: { id: "adventure", label: "Тёмная Приключенческая", file: "assets/cards/card-adventure.png", builtin: true },
-  silver:    { id: "silver",    label: "Серебряная Мистическая", file: "assets/cards/card-silver.png",    builtin: true },
-  divine:    { id: "divine",    label: "Светлая Божественная",   file: "assets/cards/card-divine.png",    builtin: true },
-  map:       { id: "map",       label: "Картографическая",       file: "assets/cards/card-map.png",       builtin: true },
+  arcane:    { id: "arcane",    file: "assets/cards/card-arcane.png",    builtin: true },
+  adventure: { id: "adventure", file: "assets/cards/card-adventure.png", builtin: true },
+  silver:    { id: "silver",    file: "assets/cards/card-silver.png",    builtin: true },
+  divine:    { id: "divine",    file: "assets/cards/card-divine.png",    builtin: true },
+  map:       { id: "map",       file: "assets/cards/card-map.png",       builtin: true },
 };
 
 function getCustomTemplates() {
@@ -29,7 +34,7 @@ async function saveCustomTemplates(templates) {
 
 function getTemplates() {
   const result = {};
-  for (const t of Object.values(DEFAULT_TEMPLATES)) result[t.id] = t;
+  for (const t of Object.values(DEFAULT_TEMPLATES)) result[t.id] = { ...t, label: L(`Templates.${t.id}`) };
   for (const t of getCustomTemplates()) result[t.id] = t;
   return result;
 }
@@ -148,11 +153,11 @@ function buildCardHTML(card, { showDelete = false, showEdit = false } = {}) {
     : "";
 
   const deleteBtn = showDelete
-    ? '<button class="npc-card-delete" title="Удалить">✕</button>'
+    ? '<button class="npc-card-delete" title="' + L("Delete") + '">✕</button>'
     : "";
 
   const editBtn = showEdit
-    ? '<button class="npc-card-edit" data-card-id="' + esc(card.id) + '" title="Редактировать">✎</button>'
+    ? '<button class="npc-card-edit" data-card-id="' + esc(card.id) + '" title="' + L("Edit") + '">✎</button>'
     : "";
 
   return '<div class="npc-card" data-card-id="' + esc(card.id) + '" data-template="' + esc(card.template) + '">'
@@ -187,7 +192,7 @@ function showCardReveal(card) {
     <div class="npc-reveal-card-wrap" id="npc-reveal-card">
       ${buildCardHTML(card)}
     </div>
-    <div class="npc-reveal-hint">Нажмите, чтобы закрыть • Alt+колёсико — зум</div>
+    <div class="npc-reveal-hint">${L("RevealHint")}</div>
   `;
   document.body.appendChild(overlay);
 
@@ -258,7 +263,7 @@ function spawnParticles(container) {
 class NPCCardsApp extends foundry.applications.api.ApplicationV2 {
   static DEFAULT_OPTIONS = {
     id: "npc-cards-app",
-    window: { title: "Коллекция карточек", resizable: true },
+    window: { title: "NPCCARDS.Title", resizable: true },
     position: { width: 740, height: 580 },
     classes: ["npc-cards"],
   };
@@ -296,7 +301,7 @@ class NPCCardsApp extends foundry.applications.api.ApplicationV2 {
     tabs += '</div>';
 
     const searchBar = '<div class="npc-search-wrap">'
-      + '<input type="text" id="npc-search" class="npc-search-input" placeholder="Поиск по имени...">'
+      + '<input type="text" id="npc-search" class="npc-search-input" placeholder="' + L("SearchPlaceholder") + '">'
       + '</div>';
 
     let content = "";
@@ -347,7 +352,7 @@ class NPCCardsApp extends foundry.applications.api.ApplicationV2 {
     for (const u of players) {
       playerOptions += '<option value="' + esc(u.id) + '">' + esc(u.name) + '</option>';
     }
-    if (!playerOptions) playerOptions = '<option value="">Нет игроков</option>';
+    if (!playerOptions) playerOptions = '<option value="">' + L("NoPlayers") + '</option>';
 
     // Validate previously selected card still exists
     if (this._selectedCardId && !allCards.find(c => c.id === this._selectedCardId)) {
@@ -360,57 +365,57 @@ class NPCCardsApp extends foundry.applications.api.ApplicationV2 {
     // Status bar showing currently picked card (or hint)
     const statusBar = selectedCard
       ? '<div class="npc-give-status has-selection">'
-        + '<span>✦ Выбрана для выдачи:</span>'
+        + '<span>' + L("SelectedForGive") + '</span>'
         + '<span class="selected-name">' + esc(selectedCard.name) + '</span>'
-        + '<button class="clear-btn" id="npc-clear-selection" title="Сбросить выбор">✕ Сбросить</button>'
+        + '<button class="clear-btn" id="npc-clear-selection" title="' + L("ClearSelectionTooltip") + '">' + L("ClearSelection") + '</button>'
         + '</div>'
       : '<div class="npc-give-status">'
-        + '<span>Выберите карточку из базы ниже, затем выдайте её игроку</span>'
+        + '<span>' + L("SelectHint") + '</span>'
         + '</div>';
 
     const giveDisabled = selectedCard ? "" : "disabled";
 
     const existingCardsHTML = allCards.length
       ? '<div style="margin-top:16px;">'
-        + '<div style="font-family:Alegreya,serif;font-size:11px;letter-spacing:1px;color:#c9a84c;margin-bottom:8px;">КАРТОЧКИ В БАЗЕ — кликни, чтобы выбрать для выдачи</div>'
+        + '<div style="font-family:Alegreya,serif;font-size:11px;letter-spacing:1px;color:#c9a84c;margin-bottom:8px;">' + L("BaseLabel") + '</div>'
         + this._buildGrid(allCards, { showDelete: true, showEdit: true, selectable: true, selectedId: this._selectedCardId })
         + '</div>'
-      : '<div style="margin-top:16px;text-align:center;color:#a89060;font-style:italic;padding:24px;opacity:0.7;">База карточек пуста — создай первую через форму выше</div>';
+      : '<div style="margin-top:16px;text-align:center;color:#a89060;font-style:italic;padding:24px;opacity:0.7;">' + L("BaseEmpty") + '</div>';
 
     const previewCard = editCard
       ? { ...editCard, id: "preview" }
-      : { id: "preview", name: "Имя NPC", desc: "Описание персонажа", template: "arcane", image: "" };
+      : { id: "preview", name: L("DefaultName"), desc: L("DefaultDesc"), template: "arcane", image: "" };
     const previewHTML = buildCardHTML(previewCard);
 
     return '<div class="npc-gm-scroll">'
       + '<div class="npc-gm-panel">'
       + '<div class="npc-gm-preview" id="npc-preview-wrap">' + previewHTML + '</div>'
       + '<div class="npc-gm-form">'
-      + '<div class="npc-form-group"><label>ИМЯ NPC</label>'
-      + '<input type="text" id="npc-input-name" placeholder="Таверна Берикус..." maxlength="40" value="' + esc(editCard?.name || "") + '"></div>'
-      + '<div class="npc-form-group"><label>ОПИСАНИЕ / ЦИТАТА</label>'
-      + '<textarea id="npc-input-desc" placeholder="Я видел вещи, которые тебе не снились..." maxlength="120">' + esc(editCard?.desc || "") + '</textarea></div>'
-      + '<div class="npc-form-group"><label>АРТ NPC</label>'
+      + '<div class="npc-form-group"><label>' + L("LabelName") + '</label>'
+      + '<input type="text" id="npc-input-name" placeholder="' + L("PlaceholderName") + '" maxlength="40" value="' + esc(editCard?.name || "") + '"></div>'
+      + '<div class="npc-form-group"><label>' + L("LabelDesc") + '</label>'
+      + '<textarea id="npc-input-desc" placeholder="' + L("PlaceholderDesc") + '" maxlength="120">' + esc(editCard?.desc || "") + '</textarea></div>'
+      + '<div class="npc-form-group"><label>' + L("LabelArt") + '</label>'
       + '<div style="display:flex;gap:6px;align-items:center;">'
-      + '<input type="text" id="npc-input-image" placeholder="URL или путь Foundry..." style="flex:1;" value="' + esc(editCard?.image || "") + '">'
-      + '<label class="npc-btn" style="cursor:pointer;margin:0;" title="Загрузить файл с компьютера">'
+      + '<input type="text" id="npc-input-image" placeholder="' + L("PlaceholderImage") + '" style="flex:1;" value="' + esc(editCard?.image || "") + '">'
+      + '<label class="npc-btn" style="cursor:pointer;margin:0;" title="' + L("UploadTooltip") + '">'
       + '<i class="fas fa-folder-open"></i>'
       + '<input type="file" id="npc-file-upload" accept="image/*" style="display:none;"></label></div>'
       + '<div id="npc-upload-preview" style="display:none;margin-top:6px;font-size:11px;color:#c9a84c;"></div></div>'
-      + '<div class="npc-form-group"><label>ШАБЛОН КАРТОЧКИ</label>'
+      + '<div class="npc-form-group"><label>' + L("LabelTemplate") + '</label>'
       + '<div class="npc-template-select">' + tmplOptions + '</div></div>'
       + '<div class="npc-actions">'
-      + (editCard ? '<span class="npc-edit-mode-badge">✎ Редактирование</span>' : '')
-      + '<button class="npc-btn primary" id="npc-btn-save">' + (editCard ? "✦ Обновить карточку" : "✦ Сохранить карточку") + '</button>'
-      + (editCard ? '<button class="npc-btn" id="npc-btn-cancel-edit">× Отмена</button>' : '')
+      + (editCard ? '<span class="npc-edit-mode-badge">' + L("EditingBadge") + '</span>' : '')
+      + '<button class="npc-btn primary" id="npc-btn-save">' + (editCard ? L("UpdateCard") : L("SaveCardBtn")) + '</button>'
+      + (editCard ? '<button class="npc-btn" id="npc-btn-cancel-edit">' + L("CancelBtn") + '</button>' : '')
       + '</div>'
-      + '<div class="npc-form-group" style="margin-top:14px;border-top:1px solid #c9a84c33;padding-top:14px;"><label>ВЫДАТЬ ВЫБРАННУЮ КАРТОЧКУ</label>'
+      + '<div class="npc-form-group" style="margin-top:14px;border-top:1px solid #c9a84c33;padding-top:14px;"><label>' + L("LabelGive") + '</label>'
       + statusBar
       + '<div class="npc-player-select" style="margin-top:8px;">'
       + '<select id="npc-select-player">' + playerOptions + '</select>'
-      + '<button class="npc-btn primary" id="npc-btn-give-one" ' + giveDisabled + '>Выдать игроку</button>'
-      + '<button class="npc-btn" id="npc-btn-give-all" ' + giveDisabled + '>Выдать всем</button>'
-      + '<button class="npc-btn" id="npc-btn-show-reveal" ' + giveDisabled + ' title="Показать анимацию повторно без выдачи">↻ Показать</button>'
+      + '<button class="npc-btn primary" id="npc-btn-give-one" ' + giveDisabled + '>' + L("GiveToPlayer") + '</button>'
+      + '<button class="npc-btn" id="npc-btn-give-all" ' + giveDisabled + '>' + L("GiveToAll") + '</button>'
+      + '<button class="npc-btn" id="npc-btn-show-reveal" ' + giveDisabled + ' title="' + L("ShowAgainTooltip") + '">' + L("ShowAgain") + '</button>'
       + '</div></div>'
       + '</div></div>'
       + this._buildTemplateManager()
@@ -480,7 +485,7 @@ class NPCCardsApp extends foundry.applications.api.ApplicationV2 {
         const cardEl = btn.closest(".npc-card");
         const cardId = cardEl.dataset.cardId;
         const confirmed = await foundry.applications.api.DialogV2.confirm({
-          window: { title: "Удалить карточку" },
+          window: { title: L("DeleteCard") },
           content: "<p>" + game.i18n.localize("NPCCARDS.ConfirmDelete") + "</p>",
         });
         if (!confirmed) return;
@@ -525,8 +530,8 @@ class NPCCardsApp extends foundry.applications.api.ApplicationV2 {
       const tmpl = el.querySelector("input[name='npc-template']:checked")?.value || "arcane";
       const card = {
         id: "preview",
-        name: nameInput?.value || "Имя NPC",
-        desc: descInput?.value || "Описание персонажа",
+        name: nameInput?.value || L("DefaultName"),
+        desc: descInput?.value || L("DefaultDesc"),
         template: tmpl,
         image: imgInput?.value || "",
         textOffsetX: _textOffsetX,
@@ -537,7 +542,7 @@ class NPCCardsApp extends foundry.applications.api.ApplicationV2 {
         nameFontSize: _nameFontSize,
         descFontSize: _descFontSize,
       };
-      preview.innerHTML = buildCardHTML(card) + '<div class="npc-editor-hint">✦ Перетащи текст или арт • Кнопки − + для зума</div>';
+      preview.innerHTML = buildCardHTML(card) + '<div class="npc-editor-hint">' + L("EditorHint") + '</div>';
       activateDragging(preview);
     };
 
@@ -557,9 +562,9 @@ class NPCCardsApp extends foundry.applications.api.ApplicationV2 {
     if (preview) {
       const zoomBar = document.createElement("div");
       zoomBar.className = "npc-zoom-bar";
-      zoomBar.innerHTML = '<button class="npc-zoom-btn" id="npc-zoom-out" title="Уменьшить арт">−</button>'
+      zoomBar.innerHTML = '<button class="npc-zoom-btn" id="npc-zoom-out" title="' + L("ZoomOut") + '">−</button>'
         + '<span class="npc-zoom-label" id="npc-zoom-label">100%</span>'
-        + '<button class="npc-zoom-btn" id="npc-zoom-in" title="Увеличить арт">+</button>';
+        + '<button class="npc-zoom-btn" id="npc-zoom-in" title="' + L("ZoomIn") + '">+</button>';
       preview.insertAdjacentElement("afterend", zoomBar);
 
       zoomBar.querySelector("#npc-zoom-in").addEventListener("click", () => applyZoom(10));
@@ -568,15 +573,15 @@ class NPCCardsApp extends foundry.applications.api.ApplicationV2 {
       const fontBar = document.createElement("div");
       fontBar.className = "npc-font-bar";
       fontBar.innerHTML =
-        '<span class="npc-font-bar-label">Имя</span>'
-        + '<button class="npc-zoom-btn" id="npc-name-size-out" title="Уменьшить шрифт имени">−</button>'
+        '<span class="npc-font-bar-label">' + L("FontName") + '</span>'
+        + '<button class="npc-zoom-btn" id="npc-name-size-out" title="' + L("NameSizeOut") + '">−</button>'
         + '<span class="npc-zoom-label" id="npc-name-size-label">14px</span>'
-        + '<button class="npc-zoom-btn" id="npc-name-size-in" title="Увеличить шрифт имени">+</button>'
+        + '<button class="npc-zoom-btn" id="npc-name-size-in" title="' + L("NameSizeIn") + '">+</button>'
         + '<span class="npc-font-bar-sep"></span>'
-        + '<span class="npc-font-bar-label">Описание</span>'
-        + '<button class="npc-zoom-btn" id="npc-desc-size-out" title="Уменьшить шрифт описания">−</button>'
+        + '<span class="npc-font-bar-label">' + L("FontDesc") + '</span>'
+        + '<button class="npc-zoom-btn" id="npc-desc-size-out" title="' + L("DescSizeOut") + '">−</button>'
         + '<span class="npc-zoom-label" id="npc-desc-size-label">10px</span>'
-        + '<button class="npc-zoom-btn" id="npc-desc-size-in" title="Увеличить шрифт описания">+</button>';
+        + '<button class="npc-zoom-btn" id="npc-desc-size-in" title="' + L("DescSizeIn") + '">+</button>';
       zoomBar.insertAdjacentElement("afterend", fontBar);
 
       const applyFontSize = (type, step) => {
@@ -679,9 +684,9 @@ class NPCCardsApp extends foundry.applications.api.ApplicationV2 {
     el.querySelector("#npc-btn-show-reveal")?.addEventListener("click", async () => {
       if (!this._selectedCardId) return;
       const userId = el.querySelector("#npc-select-player")?.value;
-      if (!userId) { ui.notifications.warn("Выберите игрока"); return; }
+      if (!userId) { ui.notifications.warn(L("SelectPlayer")); return; }
       game.socket.emit(SOCKET_EVENT, { type: "showReveal", cardId: this._selectedCardId, userId });
-      ui.notifications.info("Анимация показана игроку " + esc(game.users.get(userId)?.name));
+      ui.notifications.info(LF("ShownToPlayer", { name: esc(game.users.get(userId)?.name) }));
     });
 
     this._activateTemplateListeners(el);
@@ -695,16 +700,16 @@ class NPCCardsApp extends foundry.applications.api.ApplicationV2 {
       if (!file) return;
       if (uploadPreview) {
         uploadPreview.style.display = "block";
-        uploadPreview.textContent = "⏳ Загрузка на сервер...";
+        uploadPreview.textContent = L("Uploading");
       }
       try {
         const path = await uploadImage(file);
         if (imgInput) imgInput.value = path;
-        if (uploadPreview) uploadPreview.textContent = "✦ Загружено: " + file.name;
+        if (uploadPreview) uploadPreview.textContent = LF("Uploaded", { name: file.name });
         updatePreview();
       } catch (err) {
-        if (uploadPreview) uploadPreview.textContent = "⚠ Ошибка загрузки";
-        ui.notifications.error("NPC Cards: не удалось загрузить файл — " + err.message);
+        if (uploadPreview) uploadPreview.textContent = L("UploadError");
+        ui.notifications.error(LF("UploadFailed", { error: err.message }));
       }
     });
 
@@ -716,7 +721,7 @@ class NPCCardsApp extends foundry.applications.api.ApplicationV2 {
 
     el.querySelector("#npc-btn-save")?.addEventListener("click", async () => {
       const name = nameInput?.value?.trim();
-      if (!name) { ui.notifications.warn("Введите имя NPC"); return; }
+      if (!name) { ui.notifications.warn(L("EnterName")); return; }
       const tmpl = el.querySelector("input[name='npc-template']:checked")?.value || "arcane";
       const cardData = {
         name,
@@ -739,13 +744,13 @@ class NPCCardsApp extends foundry.applications.api.ApplicationV2 {
           await saveAllCards(cards);
         }
         this._editingCardId = null;
-        ui.notifications.info("Карточка «" + esc(name) + "» обновлена!");
+        ui.notifications.info(LF("CardUpdated", { name: esc(name) }));
       } else {
         const cardId = "card_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
         cards.push({ id: cardId, ...cardData, createdAt: Date.now() });
         await saveAllCards(cards);
         this._selectedCardId = cardId;
-        ui.notifications.info("Карточка «" + esc(name) + "» сохранена и выбрана для выдачи!");
+        ui.notifications.info(LF("CardSaved", { name: esc(name) }));
       }
       this.render();
     });
@@ -768,26 +773,26 @@ class NPCCardsApp extends foundry.applications.api.ApplicationV2 {
       const src = tmplSrc(t);
       const deleteBtn = t.builtin
         ? ''
-        : '<button class="npc-tmpl-delete" data-tmpl-id="' + esc(t.id) + '" title="Удалить шаблон">✕</button>';
+        : '<button class="npc-tmpl-delete" data-tmpl-id="' + esc(t.id) + '" title="' + L("DeleteTemplate") + '">✕</button>';
       listHTML += '<div class="npc-tmpl-mgr-item">'
         + '<img src="' + src + '" class="npc-tmpl-mgr-thumb" title="' + esc(t.label) + '">'
         + '<span class="npc-tmpl-mgr-label">' + esc(t.label) + '</span>'
-        + (t.builtin ? '<span class="npc-tmpl-builtin-tag">встроенный</span>' : '')
+        + (t.builtin ? '<span class="npc-tmpl-builtin-tag">' + L("BuiltinTag") + '</span>' : '')
         + deleteBtn
         + '</div>';
     }
     listHTML += '</div>';
 
     return '<div class="npc-template-manager">'
-      + '<div class="npc-section-label">УПРАВЛЕНИЕ ШАБЛОНАМИ</div>'
+      + '<div class="npc-section-label">' + L("SectionTemplates") + '</div>'
       + listHTML
       + '<div class="npc-add-tmpl-row">'
-      + '<input type="text" id="npc-tmpl-new-label" placeholder="Название нового шаблона..." maxlength="40">'
-      + '<label class="npc-btn" style="cursor:pointer;margin:0;" title="Выбрать изображение PNG">'
+      + '<input type="text" id="npc-tmpl-new-label" placeholder="' + L("PlaceholderTmplName") + '" maxlength="40">'
+      + '<label class="npc-btn" style="cursor:pointer;margin:0;" title="' + L("ChoosePng") + '">'
       + '<i class="fas fa-image"></i>'
       + '<input type="file" id="npc-tmpl-new-file" accept="image/*" style="display:none;"></label>'
-      + '<span id="npc-tmpl-file-hint">файл не выбран</span>'
-      + '<button class="npc-btn primary" id="npc-btn-add-template">✦ Добавить шаблон</button>'
+      + '<span id="npc-tmpl-file-hint">' + L("NoFileChosen") + '</span>'
+      + '<button class="npc-btn primary" id="npc-btn-add-template">' + L("AddTemplate") + '</button>'
       + '</div>'
       + '<img id="npc-tmpl-new-preview" style="display:none;max-height:90px;margin-top:8px;border-radius:4px;border:1px solid #c9a84c44;" alt="">'
       + '</div>';
@@ -800,7 +805,7 @@ class NPCCardsApp extends foundry.applications.api.ApplicationV2 {
       const file = e.target.files?.[0];
       if (!file) return;
       const hint = el.querySelector("#npc-tmpl-file-hint");
-      if (hint) hint.textContent = "⏳ Загрузка...";
+      if (hint) hint.textContent = L("Loading");
       try {
         _newTmplPath = await uploadImage(file);
         if (hint) hint.textContent = "✦ " + file.name;
@@ -808,20 +813,20 @@ class NPCCardsApp extends foundry.applications.api.ApplicationV2 {
         if (preview) { preview.src = _newTmplPath; preview.style.display = "block"; }
       } catch (err) {
         _newTmplPath = null;
-        if (hint) hint.textContent = "⚠ ошибка загрузки";
-        ui.notifications.error("NPC Cards: не удалось загрузить файл — " + err.message);
+        if (hint) hint.textContent = L("UploadErrShort");
+        ui.notifications.error(LF("UploadFailed", { error: err.message }));
       }
     });
 
     el.querySelector("#npc-btn-add-template")?.addEventListener("click", async () => {
       const label = el.querySelector("#npc-tmpl-new-label")?.value?.trim();
-      if (!label) { ui.notifications.warn("Введите название шаблона"); return; }
-      if (!_newTmplPath) { ui.notifications.warn("Выберите файл изображения"); return; }
+      if (!label) { ui.notifications.warn(L("EnterTmplName")); return; }
+      if (!_newTmplPath) { ui.notifications.warn(L("ChooseFile")); return; }
       const id = "tmpl_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
       const custom = getCustomTemplates();
       custom.push({ id, label, file: _newTmplPath, builtin: false });
       await saveCustomTemplates(custom);
-      ui.notifications.info("Шаблон «" + esc(label) + "» добавлен");
+      ui.notifications.info(LF("TemplateAdded", { name: esc(label) }));
       this.render();
     });
 
@@ -830,8 +835,8 @@ class NPCCardsApp extends foundry.applications.api.ApplicationV2 {
         e.stopPropagation();
         const tmplId = btn.dataset.tmplId;
         const confirmed = await foundry.applications.api.DialogV2.confirm({
-          window: { title: "Удалить шаблон" },
-          content: "<p>Удалить этот шаблон? Карточки, использующие его, останутся, но отобразятся без рамки.</p>",
+          window: { title: L("DeleteTemplate") },
+          content: "<p>" + L("ConfirmDeleteTemplate") + "</p>",
         });
         if (!confirmed) return;
         const custom = getCustomTemplates().filter(t => t.id !== tmplId);
@@ -843,13 +848,13 @@ class NPCCardsApp extends foundry.applications.api.ApplicationV2 {
 
   async _giveCard(el, toAll) {
     if (!this._selectedCardId) {
-      ui.notifications.warn("Сначала выберите карточку из базы (клик по карточке)");
+      ui.notifications.warn(L("SelectCardFirst"));
       return;
     }
     const cards = getAllCards();
     const card = cards.find(c => c.id === this._selectedCardId);
     if (!card) {
-      ui.notifications.warn("Выбранная карточка больше не существует");
+      ui.notifications.warn(L("CardGone"));
       this._selectedCardId = null;
       this.render();
       return;
@@ -858,14 +863,14 @@ class NPCCardsApp extends foundry.applications.api.ApplicationV2 {
     if (toAll) {
       await giveCardToAll(card.id);
       game.socket.emit(SOCKET_EVENT, { type: "receiveCard", cardId: card.id, userId: null });
-      ui.notifications.info("Карточка " + esc(card.name) + " выдана всем игрокам");
+      ui.notifications.info(LF("GivenToAll", { name: esc(card.name) }));
     } else {
       const userId = el.querySelector("#npc-select-player")?.value;
-      if (!userId) { ui.notifications.warn("Выберите игрока"); return; }
+      if (!userId) { ui.notifications.warn(L("SelectPlayer")); return; }
       await giveCardToPlayer(card.id, userId);
       game.socket.emit(SOCKET_EVENT, { type: "receiveCard", cardId: card.id, userId });
       const userName = game.users.get(userId)?.name;
-      ui.notifications.info("Карточка " + esc(card.name) + " выдана игроку " + esc(userName));
+      ui.notifications.info(LF("GivenToPlayer", { name: esc(card.name), user: esc(userName) }));
     }
   }
 }
@@ -950,7 +955,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
 
   target.tools["npc-cards-open"] = {
     name: "npc-cards-open",
-    title: "Коллекция карточек NPC",
+    title: "NPCCARDS.ToolTitle",
     icon: "fas fa-id-card",
     button: true,
     visible: true,
