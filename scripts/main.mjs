@@ -264,7 +264,7 @@ class NPCCardsApp extends foundry.applications.api.ApplicationV2 {
   static DEFAULT_OPTIONS = {
     id: "npc-cards-app",
     window: { title: "NPCCARDS.Title", resizable: true },
-    position: { width: 740, height: 580 },
+    position: { width: 1100, height: 800 },
     classes: ["npc-cards"],
   };
 

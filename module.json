@@ -2,7 +2,7 @@
   "id": "npc-cards",
   "title": "NPC Cards — Коллекционные карточки",
   "description": "Система коллекционных карточек NPC для Foundry VTT. ГМ создаёт карточки персонажей и выдаёт их игрокам с анимацией в гача-стиле.",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "socket": true,
   "compatibility": {
     "minimum": "13",
@@ -12,7 +12,7 @@
   "url": "https://github.com/BurnSIx-hub/npc-cards",
   "bugs": "https://github.com/BurnSIx-hub/npc-cards/issues",
   "manifest": "https://github.com/BurnSIx-hub/npc-cards/releases/latest/download/module.json",
-  "download": "https://github.com/BurnSIx-hub/npc-cards/releases/download/v1.9.0/module.zip",
+  "download": "https://github.com/BurnSIx-hub/npc-cards/releases/download/v1.9.1/module.zip",
   "esmodules": ["scripts/main.mjs"],
   "styles": ["styles/npc-cards.css"],
   "languages": [
